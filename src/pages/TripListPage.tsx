@@ -30,7 +30,7 @@ export default function TripListPage({ trips, loading, userEmail, onCreate, onSe
     if (!form.name || !form.destination || !form.startDate || !form.endDate) return;
     setSaving(true);
     try {
-      await onCreate(form);
+      await onCreate({ ...form, isShared: false, shareToken: '' });
       setShowModal(false);
       setForm({ name: '', destination: '', startDate: '', endDate: '', coverEmoji: '✈️' });
     } finally {

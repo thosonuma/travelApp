@@ -60,4 +60,6 @@ export interface Trip {
   scheduleItems: ScheduleItem[];
   wishlist: WishlistItem[];
   createdAt: string;
+  isShared: boolean;
+  shareToken: string;
 }

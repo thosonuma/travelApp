@@ -6,7 +6,12 @@ import * as db from './db';
 import AuthPage from './pages/AuthPage';
 import TripListPage from './pages/TripListPage';
 import TripDetailPage from './pages/TripDetailPage';
+import SharedTripPage from './pages/SharedTripPage';
 import { Loader2 } from 'lucide-react';
+
+// /share/:token の形式か確認
+const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
+const SHARE_TOKEN = shareMatch ? shareMatch[1] : null;
 
 type View = { page: 'list' } | { page: 'detail'; tripId: string };
 
@@ -87,6 +92,11 @@ export default function App() {
   }
 
   // --- Render ---
+
+  // 共有ページは認証・設定チェック不要で表示
+  if (SHARE_TOKEN) {
+    return <SharedTripPage shareToken={SHARE_TOKEN} />;
+  }
 
   if (!isConfigured) {
     return (

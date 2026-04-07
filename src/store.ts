@@ -14,6 +14,8 @@ const sampleTrip: Trip = {
   startDate: '2026-05-02',
   endDate: '2026-05-05',
   coverEmoji: '🏝️',
+  isShared: false,
+  shareToken: generateId(),
   flights: [
     {
       id: generateId(),

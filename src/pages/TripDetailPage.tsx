@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation } from '../types';
 import {
   ArrowLeft, Plane, Hotel, Calendar, Star, Plus, Trash2,
-  Clock, MapPin, ChevronLeft, ChevronRight, Edit2
+  Clock, MapPin, ChevronLeft, ChevronRight, Edit2,
+  Share2, Link, Check, X, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { getTripDates, formatDate, formatDateShort } from '../store';
 import * as db from '../db';
@@ -55,6 +56,27 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('flights');
   const [modal, setModal] = useState<Modal>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharingToggling, setSharingToggling] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = `${window.location.origin}/share/${trip.shareToken}`;
+
+  async function handleToggleShare() {
+    setSharingToggling(true);
+    try {
+      await db.setTripShared(trip.id, !trip.isShared);
+      onTripUpdated({ ...trip, isShared: !trip.isShared });
+    } finally {
+      setSharingToggling(false);
+    }
+  }
+
+  async function handleCopyLink() {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const selectedDate = dates[selectedDateIndex];
   const dayItems = trip.scheduleItems
@@ -159,6 +181,17 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
               {' · '}{trip.destination}
             </p>
           </div>
+          <button
+            onClick={() => setShowShareModal(true)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              trip.isShared
+                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Share2 className="w-4 h-4" />
+            {trip.isShared ? '共有中' : '共有'}
+          </button>
           <button
             onClick={() => { if (confirm('この旅行を削除しますか？')) onDelete(); }}
             className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-400"
@@ -459,6 +492,69 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
           onSave={(data) => handleSaveWishlist(data, modal.item)}
           onClose={() => setModal(null)}
         />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <Share2 className="w-5 h-5 text-indigo-500" />
+                  <h2 className="text-lg font-bold text-gray-900">プランを共有</h2>
+                </div>
+                <button onClick={() => setShowShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Toggle */}
+              <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-4">
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">共有リンクを公開</p>
+                  <p className="text-xs text-gray-500 mt-0.5">ONにするとリンクを知る全員が閲覧できます</p>
+                </div>
+                <button
+                  onClick={handleToggleShare}
+                  disabled={sharingToggling}
+                  className="flex-shrink-0 ml-3"
+                >
+                  {trip.isShared
+                    ? <ToggleRight className="w-10 h-10 text-green-500" />
+                    : <ToggleLeft className="w-10 h-10 text-gray-300" />
+                  }
+                </button>
+              </div>
+
+              {/* Link copy */}
+              {trip.isShared ? (
+                <div>
+                  <p className="text-xs font-medium text-gray-600 mb-2">共有URL</p>
+                  <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+                    <Link className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="text-xs text-gray-600 flex-1 truncate">{shareUrl}</span>
+                    <button
+                      onClick={handleCopyLink}
+                      className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        copied ? 'bg-green-100 text-green-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      }`}
+                    >
+                      {copied ? <><Check className="w-3 h-3" /> コピー済</> : 'コピー'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    ※ 閲覧専用です。編集・削除はできません。
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 text-center py-2">
+                  共有をONにするとリンクが発行されます
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

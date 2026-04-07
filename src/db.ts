@@ -14,6 +14,8 @@ type DbTrip = {
   end_date: string;
   cover_emoji: string;
   created_at: string;
+  is_shared: boolean;
+  share_token: string;
 };
 
 type DbFlight = {
@@ -136,6 +138,8 @@ export async function loadTrips(): Promise<Trip[]> {
     endDate: r.end_date,
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
+    isShared: r.is_shared ?? false,
+    shareToken: r.share_token ?? '',
     flights: [],
     accommodations: [],
     scheduleItems: [],
@@ -163,6 +167,8 @@ export async function loadTripDetails(tripId: string): Promise<Trip> {
     endDate: r.end_date,
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
+    isShared: r.is_shared ?? false,
+    shareToken: r.share_token ?? '',
     flights: ((flightsRes.data ?? []) as DbFlight[]).map(toFlight),
     accommodations: ((accsRes.data ?? []) as DbAccommodation[]).map(toAccommodation),
     scheduleItems: ((schedRes.data ?? []) as DbScheduleItem[]).map(toScheduleItem),
@@ -200,6 +206,8 @@ export async function createTrip(
     endDate: r.end_date,
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
+    isShared: r.is_shared ?? false,
+    shareToken: r.share_token ?? '',
     flights: [],
     accommodations: [],
     scheduleItems: [],
@@ -401,4 +409,49 @@ export async function updateWishlistItem(item: WishlistItem): Promise<void> {
 export async function deleteWishlistItem(id: string): Promise<void> {
   const { error } = await supabase.from('wishlist_items').delete().eq('id', id);
   if (error) throw error;
+}
+
+// ============================================================
+// 共有機能
+// ============================================================
+
+/** 共有ON/OFFを切り替える */
+export async function setTripShared(tripId: string, isShared: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('trips')
+    .update({ is_shared: isShared })
+    .eq('id', tripId);
+  if (error) throw error;
+}
+
+/** share_token でトリップを読み込む（未ログインOK） */
+export async function loadSharedTrip(shareToken: string): Promise<Trip> {
+  const [tripRes, flightsRes, accsRes, schedRes, wishRes] = await Promise.all([
+    supabase.from('trips').select('*').eq('share_token', shareToken).eq('is_shared', true).single(),
+    supabase.from('flights').select('*'),
+    supabase.from('accommodations').select('*'),
+    supabase.from('schedule_items').select('*'),
+    supabase.from('wishlist_items').select('*'),
+  ]);
+
+  if (tripRes.error) throw tripRes.error;
+
+  const r = tripRes.data as DbTrip;
+  const tripId = r.id;
+
+  return {
+    id: r.id,
+    name: r.name,
+    destination: r.destination,
+    startDate: r.start_date,
+    endDate: r.end_date,
+    coverEmoji: r.cover_emoji,
+    createdAt: r.created_at,
+    isShared: r.is_shared ?? false,
+    shareToken: r.share_token ?? '',
+    flights: ((flightsRes.data ?? []) as DbFlight[]).filter((f) => f.trip_id === tripId).map(toFlight),
+    accommodations: ((accsRes.data ?? []) as DbAccommodation[]).filter((a) => a.trip_id === tripId).map(toAccommodation),
+    scheduleItems: ((schedRes.data ?? []) as DbScheduleItem[]).filter((s) => s.trip_id === tripId).map(toScheduleItem),
+    wishlist: ((wishRes.data ?? []) as DbWishlistItem[]).filter((w) => w.trip_id === tripId).map(toWishlistItem),
+  };
 }
