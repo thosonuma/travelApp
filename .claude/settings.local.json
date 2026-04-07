@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(/usr/local/bin/npm create:*)",
+      "Bash(ls /usr/local/bin/node* /usr/local/bin/npm*)",
+      "Read(//Users/tamaki/.nvm/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(command -v node)",
+      "Bash(/usr/local/bin/node --version)",
+      "Bash(export PATH=\"/usr/local/bin:$PATH\")",
+      "Bash(1:*)",
+      "Bash(npm install:*)",
+      "Bash(curl -s http://localhost:3000)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm run:*)",
+      "Bash(xargs kill:*)",
+      "Read(//usr/local/bin/**)",
+      "Bash(echo \"PATH=$PATH\")",
+      "Bash(npm audit:*)"
+    ]
+  }
+}
