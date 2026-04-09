@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Trip, Flight, Accommodation, ScheduleItem, WishlistItem } from './types';
+import { Trip, Flight, Accommodation, ScheduleItem, WishlistItem, PackingItem } from './types';
 
 // ============================================================
 // 型マッピング (DB snake_case ↔ TS camelCase)
@@ -66,6 +66,15 @@ type DbWishlistItem = {
   priority: string;
 };
 
+type DbPackingItem = {
+  id: string;
+  trip_id: string;
+  category: string;
+  name: string;
+  notes: string;
+  is_checked: boolean;
+};
+
 function toFlight(r: DbFlight): Flight {
   return {
     id: r.id,
@@ -118,6 +127,16 @@ function toWishlistItem(r: DbWishlistItem): WishlistItem {
   };
 }
 
+function toPackingItem(r: DbPackingItem): PackingItem {
+  return {
+    id: r.id,
+    category: r.category as PackingItem['category'],
+    name: r.name,
+    notes: r.notes,
+    isChecked: r.is_checked,
+  };
+}
+
 // ============================================================
 // Trip CRUD
 // ============================================================
@@ -144,16 +163,18 @@ export async function loadTrips(): Promise<Trip[]> {
     accommodations: [],
     scheduleItems: [],
     wishlist: [],
+    packingItems: [],
   }));
 }
 
 export async function loadTripDetails(tripId: string): Promise<Trip> {
-  const [tripRes, flightsRes, accsRes, schedRes, wishRes] = await Promise.all([
+  const [tripRes, flightsRes, accsRes, schedRes, wishRes, packRes] = await Promise.all([
     supabase.from('trips').select('*').eq('id', tripId).single(),
     supabase.from('flights').select('*').eq('trip_id', tripId),
     supabase.from('accommodations').select('*').eq('trip_id', tripId),
     supabase.from('schedule_items').select('*').eq('trip_id', tripId),
     supabase.from('wishlist_items').select('*').eq('trip_id', tripId),
+    supabase.from('packing_items').select('*').eq('trip_id', tripId),
   ]);
 
   if (tripRes.error) throw tripRes.error;
@@ -173,11 +194,12 @@ export async function loadTripDetails(tripId: string): Promise<Trip> {
     accommodations: ((accsRes.data ?? []) as DbAccommodation[]).map(toAccommodation),
     scheduleItems: ((schedRes.data ?? []) as DbScheduleItem[]).map(toScheduleItem),
     wishlist: ((wishRes.data ?? []) as DbWishlistItem[]).map(toWishlistItem),
+    packingItems: ((packRes.data ?? []) as DbPackingItem[]).map(toPackingItem),
   };
 }
 
 export async function createTrip(
-  data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'createdAt'>
+  data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'packingItems' | 'createdAt'>
 ): Promise<Trip> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('ログインが必要です');
@@ -212,6 +234,7 @@ export async function createTrip(
     accommodations: [],
     scheduleItems: [],
     wishlist: [],
+    packingItems: [],
   };
 }
 
@@ -412,6 +435,44 @@ export async function deleteWishlistItem(id: string): Promise<void> {
 }
 
 // ============================================================
+// Packing Item CRUD
+// ============================================================
+
+export async function addPackingItem(tripId: string, data: Omit<PackingItem, 'id'>): Promise<PackingItem> {
+  const { data: row, error } = await supabase
+    .from('packing_items')
+    .insert({
+      trip_id: tripId,
+      category: data.category,
+      name: data.name,
+      notes: data.notes,
+      is_checked: data.isChecked,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return toPackingItem(row as DbPackingItem);
+}
+
+export async function updatePackingItem(item: PackingItem): Promise<void> {
+  const { error } = await supabase
+    .from('packing_items')
+    .update({
+      category: item.category,
+      name: item.name,
+      notes: item.notes,
+      is_checked: item.isChecked,
+    })
+    .eq('id', item.id);
+  if (error) throw error;
+}
+
+export async function deletePackingItem(id: string): Promise<void> {
+  const { error } = await supabase.from('packing_items').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ============================================================
 // 共有機能
 // ============================================================
 
@@ -426,12 +487,13 @@ export async function setTripShared(tripId: string, isShared: boolean): Promise<
 
 /** share_token でトリップを読み込む（未ログインOK） */
 export async function loadSharedTrip(shareToken: string): Promise<Trip> {
-  const [tripRes, flightsRes, accsRes, schedRes, wishRes] = await Promise.all([
+  const [tripRes, flightsRes, accsRes, schedRes, wishRes, packRes] = await Promise.all([
     supabase.from('trips').select('*').eq('share_token', shareToken).eq('is_shared', true).single(),
     supabase.from('flights').select('*'),
     supabase.from('accommodations').select('*'),
     supabase.from('schedule_items').select('*'),
     supabase.from('wishlist_items').select('*'),
+    supabase.from('packing_items').select('*'),
   ]);
 
   if (tripRes.error) throw tripRes.error;
@@ -453,5 +515,6 @@ export async function loadSharedTrip(shareToken: string): Promise<Trip> {
     accommodations: ((accsRes.data ?? []) as DbAccommodation[]).filter((a) => a.trip_id === tripId).map(toAccommodation),
     scheduleItems: ((schedRes.data ?? []) as DbScheduleItem[]).filter((s) => s.trip_id === tripId).map(toScheduleItem),
     wishlist: ((wishRes.data ?? []) as DbWishlistItem[]).filter((w) => w.trip_id === tripId).map(toWishlistItem),
+    packingItems: ((packRes.data ?? []) as DbPackingItem[]).filter((p) => p.trip_id === tripId).map(toPackingItem),
   };
 }

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   style="stop-color:#38bdf8;stop-opacity:1" />
+      <stop offset="45%"  style="stop-color:#7dd3fc;stop-opacity:1" />
+      <stop offset="80%"  style="stop-color:#bae6fd;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e0f2fe;stop-opacity:1" />
+    </linearGradient>
+    <!-- Sun: 白く輝くハレーション -->
+    <radialGradient id="sunHalo" cx="85%" cy="18%" r="22%">
+      <stop offset="0%"   style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="20%"  style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="50%"  style="stop-color:#e0f2fe;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#7dd3fc;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Sky background -->
+  <rect width="1200" height="320" fill="url(#skyGrad)"/>
+  <!-- Sun halo glow (白い光) -->
+  <rect width="1200" height="320" fill="url(#sunHalo)"/>
+
+  <!-- Cloud 1 - large fluffy, left center -->
+  <g>
+    <ellipse cx="195" cy="200" rx="108" ry="40" fill="white" opacity="0.98"/>
+    <ellipse cx="145" cy="206" rx="65"  ry="32" fill="white" opacity="0.96"/>
+    <ellipse cx="242" cy="194" rx="78"  ry="34" fill="white" opacity="0.96"/>
+    <ellipse cx="192" cy="178" rx="74"  ry="38" fill="white" opacity="0.98"/>
+    <ellipse cx="158" cy="182" rx="55"  ry="31" fill="white" opacity="0.94"/>
+    <ellipse cx="228" cy="176" rx="60"  ry="34" fill="white" opacity="0.94"/>
+    <!-- shadow bottom -->
+    <ellipse cx="195" cy="204" rx="105" ry="18" fill="#e0f2fe" opacity="0.35"/>
+  </g>
+
+  <!-- Cloud 2 - large, right side -->
+  <g>
+    <ellipse cx="900" cy="175" rx="115" ry="44" fill="white" opacity="0.97"/>
+    <ellipse cx="848" cy="182" rx="72"  ry="34" fill="white" opacity="0.95"/>
+    <ellipse cx="950" cy="170" rx="82"  ry="36" fill="white" opacity="0.95"/>
+    <ellipse cx="898" cy="155" rx="80"  ry="40" fill="white" opacity="0.97"/>
+    <ellipse cx="858" cy="160" rx="60"  ry="33" fill="white" opacity="0.90"/>
+    <ellipse cx="934" cy="155" rx="68"  ry="36" fill="white" opacity="0.90"/>
+    <ellipse cx="900" cy="180" rx="112" ry="20" fill="#e0f2fe" opacity="0.30"/>
+  </g>
+
+  <!-- Cloud 3 - medium, upper center -->
+  <g>
+    <ellipse cx="560" cy="100" rx="82" ry="30" fill="white" opacity="0.93"/>
+    <ellipse cx="514" cy="106" rx="52" ry="24" fill="white" opacity="0.91"/>
+    <ellipse cx="604" cy="96"  rx="60" ry="26" fill="white" opacity="0.91"/>
+    <ellipse cx="558" cy="86"  rx="56" ry="28" fill="white" opacity="0.93"/>
+    <ellipse cx="524" cy="90"  rx="42" ry="22" fill="white" opacity="0.87"/>
+    <ellipse cx="560" cy="106" rx="78" ry="14" fill="#e0f2fe" opacity="0.28"/>
+  </g>
+
+  <!-- Cloud 4 - small, far left upper -->
+  <g>
+    <ellipse cx="88"  cy="82"  rx="48" ry="18" fill="white" opacity="0.82"/>
+    <ellipse cx="64"  cy="87"  rx="32" ry="15" fill="white" opacity="0.78"/>
+    <ellipse cx="112" cy="79"  rx="36" ry="16" fill="white" opacity="0.78"/>
+    <ellipse cx="88"  cy="73"  rx="34" ry="17" fill="white" opacity="0.82"/>
+  </g>
+
+  <!-- Cloud 5 - tiny, mid right upper -->
+  <g>
+    <ellipse cx="740" cy="58"  rx="44" ry="16" fill="white" opacity="0.75"/>
+    <ellipse cx="718" cy="62"  rx="30" ry="13" fill="white" opacity="0.72"/>
+    <ellipse cx="762" cy="55"  rx="34" ry="15" fill="white" opacity="0.72"/>
+  </g>
+
+  <!-- Cloud 6 - mid bottom far left -->
+  <g>
+    <ellipse cx="390" cy="258" rx="58" ry="22" fill="white" opacity="0.70"/>
+    <ellipse cx="362" cy="263" rx="38" ry="18" fill="white" opacity="0.66"/>
+    <ellipse cx="416" cy="254" rx="42" ry="20" fill="white" opacity="0.66"/>
+    <ellipse cx="390" cy="248" rx="40" ry="20" fill="white" opacity="0.70"/>
+  </g>
+
+  <!-- Distant haze at horizon -->
+  <rect x="0" y="270" width="1200" height="50" fill="url(#skyGrad)" opacity="0.35"/>
+</svg>

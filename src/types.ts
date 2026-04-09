@@ -3,6 +3,7 @@ export type ItemCategory = 'tour' | 'food' | 'transport' | 'free';
 export type ItemStatus = 'booked' | 'tentative';
 export type WishlistCategory = 'restaurant' | 'spot' | 'shop' | 'activity';
 export type WishlistPriority = 'high' | 'medium' | 'low';
+export type PackingCategory = 'clothing' | 'toiletry' | 'document' | 'electronics' | 'medicine' | 'other';
 
 export interface Flight {
   id: string;
@@ -48,6 +49,14 @@ export interface WishlistItem {
   priority: WishlistPriority;
 }
 
+export interface PackingItem {
+  id: string;
+  category: PackingCategory;
+  name: string;
+  notes: string;
+  isChecked: boolean;
+}
+
 export interface Trip {
   id: string;
   name: string;
@@ -59,6 +68,7 @@ export interface Trip {
   accommodations: Accommodation[];
   scheduleItems: ScheduleItem[];
   wishlist: WishlistItem[];
+  packingItems: PackingItem[];
   createdAt: string;
   isShared: boolean;
   shareToken: string;

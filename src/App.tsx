@@ -68,7 +68,7 @@ export default function App() {
   }
 
   async function handleCreateTrip(
-    data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'createdAt'>
+    data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'packingItems' | 'createdAt'>
   ) {
     const newTrip = await db.createTrip(data);
     setTrips((prev) => [newTrip, ...prev]);
@@ -100,7 +100,7 @@ export default function App() {
 
   if (!isConfigured) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
           <div className="text-5xl mb-4">⚙️</div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Supabase の設定が必要です</h1>
@@ -121,8 +121,8 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-indigo-100">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-sky-100">
+        <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
       </div>
     );
   }
@@ -135,7 +135,7 @@ export default function App() {
     if (detailLoading || !currentTrip) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+          <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
         </div>
       );
     }

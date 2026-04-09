@@ -46,7 +46,7 @@ export default function AccommodationModal({ initial, tripStartDate, tripEndDate
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="例：ANAインターコンチネンタル石垣リゾート"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 required
               />
             </div>
@@ -58,7 +58,7 @@ export default function AccommodationModal({ initial, tripStartDate, tripEndDate
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 placeholder="例：沖縄県石垣市真栄里354-1"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -71,7 +71,7 @@ export default function AccommodationModal({ initial, tripStartDate, tripEndDate
                   min={tripStartDate}
                   max={tripEndDate}
                   onChange={(e) => setForm({ ...form, checkIn: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
               <div>
@@ -82,7 +82,7 @@ export default function AccommodationModal({ initial, tripStartDate, tripEndDate
                   min={form.checkIn}
                   max={tripEndDate}
                   onChange={(e) => setForm({ ...form, checkOut: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -94,7 +94,7 @@ export default function AccommodationModal({ initial, tripStartDate, tripEndDate
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={3}
                 placeholder="部屋タイプ、特別リクエスト、チェックイン時間など"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
               />
             </div>
 
@@ -108,7 +108,7 @@ export default function AccommodationModal({ initial, tripStartDate, tripEndDate
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-sky-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors"
               >
                 保存する
               </button>

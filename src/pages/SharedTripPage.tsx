@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Trip, ScheduleItem, WishlistItem } from '../types';
+import { Trip, ScheduleItem, WishlistItem, PackingItem } from '../types';
 import { loadSharedTrip } from '../db';
 import { getTripDates, formatDate, formatDateShort } from '../store';
 import {
   Plane, Hotel, Calendar, Star, Clock, MapPin,
-  ChevronLeft, ChevronRight, Loader2, AlertCircle, Lock
+  ChevronLeft, ChevronRight, Loader2, AlertCircle, Lock, ShoppingBag, Check
 } from 'lucide-react';
 
 const CATEGORY_STYLES: Record<ScheduleItem['category'], { bg: string; text: string; border: string; label: string; emoji: string }> = {
   tour:      { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'ツアー/体験', emoji: '🤿' },
   food:      { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200',  label: '食事',       emoji: '🍽️' },
   transport: { bg: 'bg-sky-50',     text: 'text-sky-700',     border: 'border-sky-200',     label: '移動',       emoji: '🚌' },
-  free:      { bg: 'bg-purple-50',  text: 'text-purple-700',  border: 'border-purple-200',  label: '自由時間',   emoji: '🌴' },
+  free:      { bg: 'bg-cyan-50',  text: 'text-violet-600',  border: 'border-cyan-200',  label: '自由時間',   emoji: '🌴' },
 };
 
 const WISHLIST_LABELS: Record<WishlistItem['category'], string> = {
@@ -31,6 +31,15 @@ const PRIORITY_LABELS: Record<WishlistItem['priority'], string> = {
   high: '高', medium: '中', low: '低',
 };
 
+const PACKING_CATEGORY_LABELS: Record<PackingItem['category'], { label: string; emoji: string }> = {
+  clothing:    { label: '衣類',     emoji: '👕' },
+  toiletry:    { label: '洗面用具', emoji: '🪥' },
+  document:    { label: '書類',     emoji: '📄' },
+  electronics: { label: '電子機器', emoji: '🔌' },
+  medicine:    { label: '薬・衛生', emoji: '💊' },
+  other:       { label: 'その他',   emoji: '🎒' },
+};
+
 interface Props {
   shareToken: string;
 }
@@ -40,7 +49,7 @@ export default function SharedTripPage({ shareToken }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'schedule' | 'flights' | 'accommodations' | 'wishlist'>('schedule');
+  const [activeTab, setActiveTab] = useState<'schedule' | 'flights' | 'accommodations' | 'wishlist' | 'packing'>('schedule');
 
   useEffect(() => {
     loadSharedTrip(shareToken)
@@ -51,15 +60,15 @@ export default function SharedTripPage({ shareToken }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-100 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
       </div>
     );
   }
 
   if (error || !trip) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center">
           <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-gray-400" />
@@ -83,21 +92,28 @@ export default function SharedTripPage({ shareToken }: Props) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-sky-500 text-white">
-        <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="relative overflow-hidden text-white">
+        <img
+          src="/sky.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
+        <div className="relative max-w-3xl mx-auto px-6 py-10">
           <div className="flex items-start gap-4">
-            <span className="text-5xl">{trip.coverEmoji}</span>
+            <span className="text-5xl drop-shadow-lg">{trip.coverEmoji}</span>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-1">{trip.name}</h1>
-              <p className="text-indigo-100 text-lg">{trip.destination}</p>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-indigo-100">
+              <h1 className="text-3xl font-bold mb-1 drop-shadow">{trip.name}</h1>
+              <p className="text-white/85 text-lg">{trip.destination}</p>
+              <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-white/80">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
                   {new Date(trip.startDate).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
                   {' 〜 '}
                   {new Date(trip.endDate).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
                 </span>
-                <span className="bg-white/20 px-2.5 py-1 rounded-full text-white font-medium text-xs">
+                <span className="bg-white/25 px-2.5 py-1 rounded-full text-white font-medium text-xs backdrop-blur-sm">
                   {nights}泊{nights + 1}日
                 </span>
               </div>
@@ -105,17 +121,18 @@ export default function SharedTripPage({ shareToken }: Props) {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-3 mt-8">
+          <div className="grid grid-cols-5 gap-3 mt-8">
             {[
               { emoji: '✈️', count: trip.flights.length, label: 'フライト' },
               { emoji: '🏨', count: trip.accommodations.length, label: '宿泊先' },
               { emoji: '📅', count: trip.scheduleItems.length, label: '予定' },
               { emoji: '⭐', count: trip.wishlist.length, label: '行きたい' },
+              { emoji: '🎒', count: trip.packingItems.length, label: '持ち物' },
             ].map((s) => (
-              <div key={s.label} className="bg-white/15 backdrop-blur rounded-xl p-3 text-center">
+              <div key={s.label} className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20">
                 <div className="text-xl mb-0.5">{s.emoji}</div>
                 <div className="text-2xl font-bold">{s.count}</div>
-                <div className="text-xs text-indigo-100">{s.label}</div>
+                <div className="text-xs text-white/80">{s.label}</div>
               </div>
             ))}
           </div>
@@ -126,13 +143,13 @@ export default function SharedTripPage({ shareToken }: Props) {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex gap-0 overflow-x-auto">
-            {([ ['schedule', '📅 スケジュール'], ['flights', '✈️ フライト'], ['accommodations', '🏨 宿泊'], ['wishlist', '⭐ 行きたい'] ] as const).map(([tab, label]) => (
+            {([ ['schedule', '📅 スケジュール'], ['flights', '✈️ フライト'], ['accommodations', '🏨 宿泊'], ['wishlist', '⭐ 行きたい'], ['packing', '🎒 持ち物'] ] as const).map(([tab, label]) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-shrink-0 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
-                    ? 'border-indigo-600 text-indigo-600'
+                    ? 'border-sky-500 text-sky-500'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -164,7 +181,7 @@ export default function SharedTripPage({ shareToken }: Props) {
                     key={date}
                     onClick={() => setSelectedDateIndex(i)}
                     className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                      i === selectedDateIndex ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      i === selectedDateIndex ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
                     Day {i + 1} <span className="opacity-75 ml-1">{formatDateShort(date)}</span>
@@ -181,7 +198,7 @@ export default function SharedTripPage({ shareToken }: Props) {
             </div>
 
             <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-4 h-4 text-indigo-500" />
+              <Calendar className="w-4 h-4 text-sky-500" />
               <h2 className="font-bold text-gray-800">{formatDate(selectedDate)}</h2>
             </div>
 
@@ -238,8 +255,8 @@ export default function SharedTripPage({ shareToken }: Props) {
             ) : trip.flights.map((f) => (
               <div key={f.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
-                  <Plane className="w-4 h-4 text-indigo-500" />
-                  <span className="text-sm font-bold text-indigo-600">
+                  <Plane className="w-4 h-4 text-sky-500" />
+                  <span className="text-sm font-bold text-sky-500">
                     {f.direction === 'outbound' ? '往路' : '復路'}
                   </span>
                 </div>
@@ -274,8 +291,8 @@ export default function SharedTripPage({ shareToken }: Props) {
             ) : trip.accommodations.map((a) => (
               <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <Hotel className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm font-bold text-purple-600">宿泊先</span>
+                  <Hotel className="w-4 h-4 text-cyan-500" />
+                  <span className="text-sm font-bold text-cyan-600">宿泊先</span>
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg">{a.name}</h3>
                 {a.address && (
@@ -283,7 +300,7 @@ export default function SharedTripPage({ shareToken }: Props) {
                     <MapPin className="w-3 h-3" />{a.address}
                   </p>
                 )}
-                <p className="text-sm text-purple-600 font-medium mt-2">
+                <p className="text-sm text-cyan-600 font-medium mt-2">
                   チェックイン：{new Date(a.checkIn).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
                   {' 〜 '}
                   チェックアウト：{new Date(a.checkOut).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
@@ -321,9 +338,69 @@ export default function SharedTripPage({ shareToken }: Props) {
             )}
           </div>
         )}
+
+        {/* Packing Tab */}
+        {activeTab === 'packing' && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <ShoppingBag className="w-4 h-4 text-teal-500" />
+              <h2 className="font-bold text-gray-800">持ち物リスト</h2>
+              <span className="text-xs text-gray-400">
+                {trip.packingItems.filter((p) => p.isChecked).length}/{trip.packingItems.length} 準備済み
+              </span>
+            </div>
+            {trip.packingItems.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">持ち物リストはありません</div>
+            ) : (
+              (() => {
+                const grouped = trip.packingItems.reduce<Record<string, typeof trip.packingItems>>((acc, item) => {
+                  if (!acc[item.category]) acc[item.category] = [];
+                  acc[item.category].push(item);
+                  return acc;
+                }, {});
+                return (
+                  <div className="space-y-4">
+                    {Object.entries(grouped).map(([cat, items]) => {
+                      const catInfo = PACKING_CATEGORY_LABELS[cat as PackingItem['category']];
+                      return (
+                        <div key={cat} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                          <div className="flex items-center gap-2 px-4 py-2.5 bg-teal-50 border-b border-teal-100">
+                            <span>{catInfo.emoji}</span>
+                            <span className="text-sm font-semibold text-teal-700">{catInfo.label}</span>
+                            <span className="ml-auto text-xs text-teal-500">
+                              {items.filter((i) => i.isChecked).length}/{items.length}
+                            </span>
+                          </div>
+                          <div className="divide-y divide-gray-100">
+                            {items.map((item) => (
+                              <div key={item.id} className={`flex items-center gap-3 px-4 py-3 ${item.isChecked ? 'opacity-50' : ''}`}>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                  item.isChecked ? 'bg-teal-500 border-teal-500' : 'border-gray-300'
+                                }`}>
+                                  {item.isChecked && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm font-medium ${item.isChecked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                    {item.name}
+                                  </p>
+                                  {item.notes && <p className="text-xs text-gray-400 mt-0.5">{item.notes}</p>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
+
       <div className="text-center py-8 text-xs text-gray-400">
         <p>✈️ 旅行プランナーで作成されたプランです</p>
         <AlertCircle className="w-3 h-3 inline mr-1 mt-3" />

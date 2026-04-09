@@ -61,7 +61,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                     onClick={() => setForm({ ...form, category: opt.value })}
                     className={`py-2 px-3 rounded-lg text-sm font-medium border-2 transition-colors flex items-center gap-2 ${
                       form.category === opt.value
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        ? 'border-sky-500 bg-sky-50 text-sky-600'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -79,7 +79,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="例：シュノーケリングツアー"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 required
               />
             </div>
@@ -90,7 +90,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
               <select
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
                 {tripDates.map((date) => (
                   <option key={date} value={date}>
@@ -108,7 +108,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                   type="time"
                   value={form.startTime}
                   onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
               <div>
@@ -117,7 +117,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                   type="time"
                   value={form.endTime}
                   onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 placeholder="例：川平湾"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="5000"
-                  className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                     onClick={() => setForm({ ...form, status: val })}
                     className={`py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
                       form.status === val
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        ? 'border-sky-500 bg-sky-50 text-sky-600'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -175,7 +175,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={3}
                 placeholder="持ち物、注意事項、予約リンクなど"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
               />
             </div>
 
@@ -189,7 +189,7 @@ export default function ScheduleModal({ initial, defaultDate, tripDates, onSave,
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-sky-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors"
               >
                 保存する
               </button>

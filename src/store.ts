@@ -141,6 +141,7 @@ const sampleTrip: Trip = {
       priority: 'low',
     },
   ],
+  packingItems: [],
   createdAt: new Date().toISOString(),
 };
 
@@ -164,7 +165,7 @@ export function saveTrips(trips: Trip[]): void {
 }
 
 // --- Trip CRUD ---
-export function createTrip(data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'createdAt'>): Trip {
+export function createTrip(data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'packingItems' | 'createdAt'>): Trip {
   return {
     ...data,
     id: generateId(),
@@ -172,6 +173,7 @@ export function createTrip(data: Omit<Trip, 'id' | 'flights' | 'accommodations' 
     accommodations: [],
     scheduleItems: [],
     wishlist: [],
+    packingItems: [],
     createdAt: new Date().toISOString(),
   };
 }

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation } from '../types';
+import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation, PackingItem } from '../types';
 import {
   ArrowLeft, Plane, Hotel, Calendar, Star, Plus, Trash2,
   Clock, MapPin, ChevronLeft, ChevronRight, Edit2,
-  Share2, Link, Check, X, ToggleLeft, ToggleRight
+  Share2, Link, Check, X, ToggleLeft, ToggleRight, ShoppingBag
 } from 'lucide-react';
 import { getTripDates, formatDate, formatDateShort } from '../store';
 import * as db from '../db';
@@ -11,12 +11,22 @@ import FlightModal from '../components/FlightModal';
 import AccommodationModal from '../components/AccommodationModal';
 import ScheduleModal from '../components/ScheduleModal';
 import WishlistModal from '../components/WishlistModal';
+import PackingModal from '../components/PackingModal';
 
 const CATEGORY_STYLES: Record<ScheduleItem['category'], { bg: string; text: string; border: string; label: string; emoji: string }> = {
   tour:      { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-300', label: 'ツアー/体験', emoji: '🤿' },
   food:      { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-300',  label: '食事',       emoji: '🍽️' },
   transport: { bg: 'bg-sky-50',     text: 'text-sky-700',     border: 'border-sky-300',     label: '移動',       emoji: '🚌' },
-  free:      { bg: 'bg-purple-50',  text: 'text-purple-700',  border: 'border-purple-300',  label: '自由時間',   emoji: '🌴' },
+  free:      { bg: 'bg-cyan-50',  text: 'text-violet-600',  border: 'border-violet-300',  label: '自由時間',   emoji: '🌴' },
+};
+
+const PACKING_CATEGORY_LABELS: Record<PackingItem['category'], { label: string; emoji: string }> = {
+  clothing:    { label: '衣類',     emoji: '👕' },
+  toiletry:    { label: '洗面用具', emoji: '🪥' },
+  document:    { label: '書類',     emoji: '📄' },
+  electronics: { label: '電子機器', emoji: '🔌' },
+  medicine:    { label: '薬・衛生', emoji: '💊' },
+  other:       { label: 'その他',   emoji: '🎒' },
 };
 
 const WISHLIST_CATEGORY_LABELS: Record<WishlistItem['category'], string> = {
@@ -43,12 +53,13 @@ interface Props {
   onBack: () => void;
 }
 
-type SidebarTab = 'flights' | 'accommodations';
+type SidebarTab = 'flights' | 'accommodations' | 'packing';
 type Modal =
   | { type: 'flight'; item?: Flight }
   | { type: 'accommodation'; item?: Accommodation }
   | { type: 'schedule'; item?: ScheduleItem; date?: string }
   | { type: 'wishlist'; item?: WishlistItem }
+  | { type: 'packing'; item?: PackingItem }
   | null;
 
 export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }: Props) {
@@ -163,6 +174,35 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
     onTripUpdated({ ...trip, wishlist: trip.wishlist.filter((w) => w.id !== id) });
   }
 
+  // --- Packing handlers ---
+  async function handleSavePacking(data: Omit<PackingItem, 'id'>, existing?: PackingItem) {
+    if (existing) {
+      await db.updatePackingItem({ ...data, id: existing.id });
+      onTripUpdated({
+        ...trip,
+        packingItems: trip.packingItems.map((p) => (p.id === existing.id ? { ...data, id: existing.id } : p)),
+      });
+    } else {
+      const newItem = await db.addPackingItem(trip.id, data);
+      onTripUpdated({ ...trip, packingItems: [...trip.packingItems, newItem] });
+    }
+    setModal(null);
+  }
+
+  async function handleTogglePackingCheck(item: PackingItem) {
+    const updated = { ...item, isChecked: !item.isChecked };
+    await db.updatePackingItem(updated);
+    onTripUpdated({
+      ...trip,
+      packingItems: trip.packingItems.map((p) => (p.id === item.id ? updated : p)),
+    });
+  }
+
+  async function handleDeletePacking(id: string) {
+    await db.deletePackingItem(id);
+    onTripUpdated({ ...trip, packingItems: trip.packingItems.filter((p) => p.id !== id) });
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -204,24 +244,32 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
       {/* 3-column layout */}
       <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 65px)' }}>
 
-        {/* LEFT: Flights & Accommodations */}
+        {/* LEFT: Flights, Accommodations & Packing */}
         <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setSidebarTab('flights')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${
-                sidebarTab === 'flights' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors ${
+                sidebarTab === 'flights' ? 'text-sky-500 border-b-2 border-sky-500' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Plane className="w-3.5 h-3.5" />フライト
+              <Plane className="w-3.5 h-3.5" />便
             </button>
             <button
               onClick={() => setSidebarTab('accommodations')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${
-                sidebarTab === 'accommodations' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors ${
+                sidebarTab === 'accommodations' ? 'text-sky-500 border-b-2 border-sky-500' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Hotel className="w-3.5 h-3.5" />宿泊
+              <Hotel className="w-3.5 h-3.5" />宿
+            </button>
+            <button
+              onClick={() => setSidebarTab('packing')}
+              className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors ${
+                sidebarTab === 'packing' ? 'text-teal-600 border-b-2 border-teal-600' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />持ち物
             </button>
           </div>
 
@@ -232,13 +280,13 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                   <p className="text-xs text-gray-400 text-center py-4">フライト情報を追加しましょう</p>
                 )}
                 {trip.flights.map((f) => (
-                  <div key={f.id} className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+                  <div key={f.id} className="bg-sky-50 border border-sky-100 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-indigo-600">
+                      <span className="text-xs font-medium text-sky-500">
                         {f.direction === 'outbound' ? '✈️ 往路' : '🛬 復路'}
                       </span>
                       <div className="flex gap-1">
-                        <button onClick={() => setModal({ type: 'flight', item: f })} className="p-1 hover:bg-indigo-100 rounded text-indigo-400">
+                        <button onClick={() => setModal({ type: 'flight', item: f })} className="p-1 hover:bg-sky-100 rounded text-sky-400">
                           <Edit2 className="w-3 h-3" />
                         </button>
                         <button onClick={() => handleDeleteFlight(f.id)} className="p-1 hover:bg-red-100 rounded text-gray-300 hover:text-red-400">
@@ -257,7 +305,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                 ))}
                 <button
                   onClick={() => setModal({ type: 'flight' })}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-indigo-200 rounded-xl text-xs text-indigo-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-sky-200 rounded-xl text-xs text-sky-400 hover:border-sky-400 hover:text-sky-500 hover:bg-sky-50 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />フライトを追加
                 </button>
@@ -270,11 +318,11 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                   <p className="text-xs text-gray-400 text-center py-4">宿泊先を追加しましょう</p>
                 )}
                 {trip.accommodations.map((a) => (
-                  <div key={a.id} className="bg-purple-50 border border-purple-100 rounded-xl p-3">
+                  <div key={a.id} className="bg-cyan-50 border border-cyan-100 rounded-xl p-3">
                     <div className="flex items-start justify-between mb-1">
                       <p className="text-xs font-bold text-gray-800 flex-1 pr-1">{a.name}</p>
                       <div className="flex gap-1 flex-shrink-0">
-                        <button onClick={() => setModal({ type: 'accommodation', item: a })} className="p-1 hover:bg-purple-100 rounded text-purple-400">
+                        <button onClick={() => setModal({ type: 'accommodation', item: a })} className="p-1 hover:bg-cyan-100 rounded text-cyan-400">
                           <Edit2 className="w-3 h-3" />
                         </button>
                         <button onClick={() => handleDeleteAccommodation(a.id)} className="p-1 hover:bg-red-100 rounded text-gray-300 hover:text-red-400">
@@ -283,7 +331,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                       </div>
                     </div>
                     {a.address && <p className="text-xs text-gray-500">{a.address}</p>}
-                    <p className="text-xs text-purple-600 font-medium mt-1">
+                    <p className="text-xs text-cyan-600 font-medium mt-1">
                       {new Date(a.checkIn).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
                       {' 〜 '}
                       {new Date(a.checkOut).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
@@ -293,9 +341,63 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                 ))}
                 <button
                   onClick={() => setModal({ type: 'accommodation' })}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-purple-200 rounded-xl text-xs text-purple-400 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-cyan-200 rounded-xl text-xs text-cyan-400 hover:border-cyan-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />宿泊先を追加
+                </button>
+              </>
+            )}
+
+            {sidebarTab === 'packing' && (
+              <>
+                <div className="flex items-center justify-between mb-1 px-0.5">
+                  <span className="text-xs text-gray-400">
+                    {trip.packingItems.filter((p) => p.isChecked).length}/{trip.packingItems.length} 準備済み
+                  </span>
+                </div>
+                {trip.packingItems.length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-4">持ち物を追加しましょう</p>
+                )}
+                {trip.packingItems.map((item) => {
+                  const catInfo = PACKING_CATEGORY_LABELS[item.category];
+                  return (
+                    <div key={item.id} className={`bg-teal-50 border border-teal-100 rounded-xl p-3 group ${item.isChecked ? 'opacity-60' : ''}`}>
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs">{catInfo.emoji}</span>
+                          <span className="text-xs text-teal-600">{catInfo.label}</span>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setModal({ type: 'packing', item })} className="p-0.5 hover:bg-teal-100 rounded text-teal-400">
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button onClick={() => handleDeletePacking(item.id)} className="p-0.5 hover:bg-red-100 rounded text-gray-300 hover:text-red-400">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleTogglePackingCheck(item)}
+                          className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
+                            item.isChecked ? 'bg-teal-500 border-teal-500' : 'border-gray-400 hover:border-teal-400'
+                          }`}
+                        >
+                          {item.isChecked && <Check className="w-2.5 h-2.5 text-white" />}
+                        </button>
+                        <p className={`text-xs font-bold flex-1 ${item.isChecked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                          {item.name}
+                        </p>
+                      </div>
+                      {item.notes && <p className="text-xs text-gray-400 mt-1 ml-6">{item.notes}</p>}
+                    </div>
+                  );
+                })}
+                <button
+                  onClick={() => setModal({ type: 'packing' })}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-teal-200 rounded-xl text-xs text-teal-400 hover:border-teal-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />持ち物を追加
                 </button>
               </>
             )}
@@ -320,7 +422,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                   key={date}
                   onClick={() => setSelectedDateIndex(i)}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                    i === selectedDateIndex ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                    i === selectedDateIndex ? 'bg-sky-500 text-white' : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
                   Day {i + 1}
@@ -342,12 +444,12 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
           <div className="flex-1 overflow-y-auto scrollbar-thin p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-indigo-500" />
+                <Calendar className="w-4 h-4 text-sky-500" />
                 <h2 className="font-bold text-gray-800">{formatDate(selectedDate)}</h2>
               </div>
               <button
                 onClick={() => setModal({ type: 'schedule', date: selectedDate })}
-                className="flex items-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors"
+                className="flex items-center gap-1.5 bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-sky-600 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />予定を追加
               </button>
@@ -356,10 +458,10 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
             {dayItems.length === 0 ? (
               <div
                 onClick={() => setModal({ type: 'schedule', date: selectedDate })}
-                className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-all"
+                className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center cursor-pointer hover:border-sky-300 hover:bg-sky-50 transition-all"
               >
                 <p className="text-gray-400 text-sm">この日の予定はまだありません</p>
-                <p className="text-indigo-400 text-xs mt-1">クリックして追加</p>
+                <p className="text-sky-400 text-xs mt-1">クリックして追加</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -493,6 +595,13 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
           onClose={() => setModal(null)}
         />
       )}
+      {modal?.type === 'packing' && (
+        <PackingModal
+          initial={modal.item}
+          onSave={(data) => handleSavePacking(data, modal.item)}
+          onClose={() => setModal(null)}
+        />
+      )}
 
       {/* Share Modal */}
       {showShareModal && (
@@ -501,7 +610,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
             <div className="p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <Share2 className="w-5 h-5 text-indigo-500" />
+                  <Share2 className="w-5 h-5 text-sky-500" />
                   <h2 className="text-lg font-bold text-gray-900">プランを共有</h2>
                 </div>
                 <button onClick={() => setShowShareModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
@@ -537,7 +646,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                     <button
                       onClick={handleCopyLink}
                       className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        copied ? 'bg-green-100 text-green-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        copied ? 'bg-green-100 text-green-700' : 'bg-sky-500 text-white hover:bg-sky-600'
                       }`}
                     >
                       {copied ? <><Check className="w-3 h-3" /> コピー済</> : 'コピー'}

@@ -54,7 +54,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                     onClick={() => setForm({ ...form, direction: dir })}
                     className={`py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
                       form.direction === dir
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        ? 'border-sky-500 bg-sky-50 text-sky-600'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -72,7 +72,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                   value={form.airline}
                   onChange={(e) => setForm({ ...form, airline: e.target.value })}
                   placeholder="ANA"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
               <div>
@@ -82,7 +82,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                   value={form.flightNo}
                   onChange={(e) => setForm({ ...form, flightNo: e.target.value })}
                   placeholder="NH987"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -94,7 +94,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                 value={form.departureAirport}
                 onChange={(e) => setForm({ ...form, departureAirport: e.target.value })}
                 placeholder="羽田空港 (HND)"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -105,7 +105,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                 value={form.arrivalAirport}
                 onChange={(e) => setForm({ ...form, arrivalAirport: e.target.value })}
                 placeholder="石垣空港 (ISG)"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -117,7 +117,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                 min={tripStartDate}
                 max={tripEndDate}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -128,7 +128,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                   type="time"
                   value={form.departureTime}
                   onChange={(e) => setForm({ ...form, departureTime: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
               <div>
@@ -137,7 +137,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                   type="time"
                   value={form.arrivalTime}
                   onChange={(e) => setForm({ ...form, arrivalTime: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                 value={form.bookingRef}
                 onChange={(e) => setForm({ ...form, bookingRef: e.target.value })}
                 placeholder="ABC123"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -159,7 +159,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={2}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
               />
             </div>
 
@@ -173,7 +173,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="flex-1 bg-sky-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors"
               >
                 保存する
               </button>
