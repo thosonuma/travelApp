@@ -75,8 +75,10 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
   const [copied, setCopied] = useState(false);
   const [copiedEdit, setCopiedEdit] = useState(false);
 
-  const shareUrl = `${window.location.origin}/share/${trip.shareToken}`;
-  const editUrl  = `${window.location.origin}/edit/${trip.editToken}`;
+  const shareUrl    = `${window.location.origin}/share/${trip.shareToken}`;
+  // 編集URLは閲覧URLに ?e=:editToken を付けた形式（閲覧↔編集をシームレスに切り替え可能）
+  const editUrl     = `${window.location.origin}/share/${trip.shareToken}?e=${trip.editToken}`;
+  const viewFromEditUrl = `${window.location.origin}/share/${trip.shareToken}?e=${editToken ?? trip.editToken}`;
 
   async function handleToggleShare() {
     setSharingToggling(true);
@@ -243,9 +245,17 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
             </p>
           </div>
           {isEditMode ? (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-100 text-sky-700">
-              <Edit2 className="w-3.5 h-3.5" />編集モード
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-100 text-sky-700">
+                <Edit2 className="w-3.5 h-3.5" />編集モード
+              </span>
+              <a
+                href={viewFromEditUrl}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />閲覧で見る
+              </a>
+            </div>
           ) : (
             <button
               onClick={() => setShowShareModal(true)}

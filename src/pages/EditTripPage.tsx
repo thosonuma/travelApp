@@ -48,7 +48,7 @@ export default function EditTripPage({ editToken }: Props) {
       editToken={editToken}
       onTripUpdated={setTrip}
       onDelete={() => {}}
-      onBack={() => { window.location.href = '/'; }}
+      onBack={() => { window.location.href = `/share/${trip.shareToken}?e=${editToken}`; }}
     />
   );
 }

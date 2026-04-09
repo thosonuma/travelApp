@@ -4,7 +4,7 @@ import { loadSharedTrip } from '../db';
 import { getTripDates, formatDate, formatDateShort } from '../store';
 import {
   Plane, Hotel, Calendar, Star, Clock, MapPin,
-  ChevronLeft, ChevronRight, Loader2, AlertCircle, Lock, ShoppingBag, Check
+  ChevronLeft, ChevronRight, Loader2, AlertCircle, Lock, ShoppingBag, Check, Pencil
 } from 'lucide-react';
 
 const CATEGORY_STYLES: Record<ScheduleItem['category'], { bg: string; text: string; border: string; label: string; emoji: string }> = {
@@ -50,6 +50,9 @@ export default function SharedTripPage({ shareToken }: Props) {
   const [error, setError] = useState('');
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'schedule' | 'flights' | 'accommodations' | 'wishlist' | 'packing'>('schedule');
+
+  // ?e=:editToken が URL にあれば編集モードへの切り替えボタンを表示
+  const editToken = new URLSearchParams(window.location.search).get('e');
 
   useEffect(() => {
     loadSharedTrip(shareToken)
@@ -104,7 +107,17 @@ export default function SharedTripPage({ shareToken }: Props) {
           <div className="flex items-start gap-4">
             <span className="text-5xl drop-shadow-lg">{trip.coverEmoji}</span>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-1 drop-shadow">{trip.name}</h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-3xl font-bold mb-1 drop-shadow">{trip.name}</h1>
+                {editToken && (
+                  <a
+                    href={`/edit/${editToken}`}
+                    className="flex-shrink-0 flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />編集する
+                  </a>
+                )}
+              </div>
               <p className="text-white/85 text-lg">{trip.destination}</p>
               <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-white/80">
                 <span className="flex items-center gap-1.5">
