@@ -2,23 +2,27 @@ import { useEffect, useState } from 'react';
 import { Trip, ScheduleItem, WishlistItem, PackingItem } from '../types';
 import { loadSharedTrip } from '../db';
 import { getTripDates, formatDate, formatDateShort } from '../store';
+import { LucideIcon } from 'lucide-react';
 import {
   Plane, Hotel, Calendar, Star, Clock, MapPin,
-  ChevronLeft, ChevronRight, Loader2, AlertCircle, Lock, ShoppingBag, Check, Pencil
+  ChevronLeft, ChevronRight, Loader2, AlertCircle, Lock,
+  ShoppingBag, Check, Pencil,
+  Compass, Utensils, Bus, Sun,
+  Target, Shirt, Droplets, FileText, Smartphone, Pill, Package, Backpack
 } from 'lucide-react';
 
-const CATEGORY_STYLES: Record<ScheduleItem['category'], { bg: string; text: string; border: string; label: string; emoji: string }> = {
-  tour:      { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'ツアー/体験', emoji: '🤿' },
-  food:      { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200',  label: '食事',       emoji: '🍽️' },
-  transport: { bg: 'bg-sky-50',     text: 'text-sky-700',     border: 'border-sky-200',     label: '移動',       emoji: '🚌' },
-  free:      { bg: 'bg-cyan-50',  text: 'text-violet-600',  border: 'border-cyan-200',  label: '自由時間',   emoji: '🌴' },
+const CATEGORY_STYLES: Record<ScheduleItem['category'], { bg: string; text: string; border: string; label: string; icon: LucideIcon }> = {
+  tour:      { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'ツアー/体験', icon: Compass  },
+  food:      { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200',  label: '食事',       icon: Utensils },
+  transport: { bg: 'bg-sky-50',     text: 'text-sky-700',     border: 'border-sky-200',     label: '移動',       icon: Bus      },
+  free:      { bg: 'bg-cyan-50',    text: 'text-violet-600',  border: 'border-cyan-200',    label: '自由時間',   icon: Sun      },
 };
 
-const WISHLIST_LABELS: Record<WishlistItem['category'], string> = {
-  restaurant: '🍽️ 飲食店',
-  spot:       '📍 スポット',
-  shop:       '🛍️ ショップ',
-  activity:   '🎯 アクティビティ',
+const WISHLIST_LABELS: Record<WishlistItem['category'], { label: string; icon: LucideIcon }> = {
+  restaurant: { label: '飲食店',       icon: Utensils    },
+  spot:       { label: 'スポット',     icon: MapPin      },
+  shop:       { label: 'ショップ',     icon: ShoppingBag },
+  activity:   { label: 'アクティビティ', icon: Target    },
 };
 
 const PRIORITY_STYLES: Record<WishlistItem['priority'], string> = {
@@ -31,13 +35,13 @@ const PRIORITY_LABELS: Record<WishlistItem['priority'], string> = {
   high: '高', medium: '中', low: '低',
 };
 
-const PACKING_CATEGORY_LABELS: Record<PackingItem['category'], { label: string; emoji: string }> = {
-  clothing:    { label: '衣類',     emoji: '👕' },
-  toiletry:    { label: '洗面用具', emoji: '🪥' },
-  document:    { label: '書類',     emoji: '📄' },
-  electronics: { label: '電子機器', emoji: '🔌' },
-  medicine:    { label: '薬・衛生', emoji: '💊' },
-  other:       { label: 'その他',   emoji: '🎒' },
+const PACKING_CATEGORY_LABELS: Record<PackingItem['category'], { label: string; icon: LucideIcon }> = {
+  clothing:    { label: '衣類',     icon: Shirt       },
+  toiletry:    { label: '洗面用具', icon: Droplets    },
+  document:    { label: '書類',     icon: FileText    },
+  electronics: { label: '電子機器', icon: Smartphone  },
+  medicine:    { label: '薬・衛生', icon: Pill        },
+  other:       { label: 'その他',   icon: Package     },
 };
 
 interface Props {
@@ -135,15 +139,15 @@ export default function SharedTripPage({ shareToken }: Props) {
 
           {/* Stats */}
           <div className="grid grid-cols-5 gap-3 mt-8">
-            {[
-              { emoji: '✈️', count: trip.flights.length, label: 'フライト' },
-              { emoji: '🏨', count: trip.accommodations.length, label: '宿泊先' },
-              { emoji: '📅', count: trip.scheduleItems.length, label: '予定' },
-              { emoji: '⭐', count: trip.wishlist.length, label: '行きたい' },
-              { emoji: '🎒', count: trip.packingItems.length, label: '持ち物' },
-            ].map((s) => (
+            {([
+              { icon: Plane,       count: trip.flights.length,       label: 'フライト' },
+              { icon: Hotel,       count: trip.accommodations.length, label: '宿泊先'  },
+              { icon: Calendar,    count: trip.scheduleItems.length,  label: '予定'    },
+              { icon: Star,        count: trip.wishlist.length,       label: '行きたい' },
+              { icon: Backpack,    count: trip.packingItems.length,   label: '持ち物'  },
+            ] as { icon: LucideIcon; count: number; label: string }[]).map((s) => (
               <div key={s.label} className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20">
-                <div className="text-xl mb-0.5">{s.emoji}</div>
+                <div className="flex justify-center mb-1"><s.icon className="w-5 h-5 text-white/90" /></div>
                 <div className="text-2xl font-bold">{s.count}</div>
                 <div className="text-xs text-white/80">{s.label}</div>
               </div>
@@ -156,17 +160,23 @@ export default function SharedTripPage({ shareToken }: Props) {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex gap-0 overflow-x-auto">
-            {([ ['schedule', '📅 スケジュール'], ['flights', '✈️ フライト'], ['accommodations', '🏨 宿泊'], ['wishlist', '⭐ 行きたい'], ['packing', '🎒 持ち物'] ] as const).map(([tab, label]) => (
+            {([
+              { tab: 'schedule',       icon: Calendar, label: 'スケジュール' },
+              { tab: 'flights',        icon: Plane,    label: 'フライト'     },
+              { tab: 'accommodations', icon: Hotel,    label: '宿泊'         },
+              { tab: 'wishlist',       icon: Star,     label: '行きたい'     },
+              { tab: 'packing',        icon: Backpack, label: '持ち物'       },
+            ] as { tab: typeof activeTab; icon: LucideIcon; label: string }[]).map(({ tab, icon: Icon, label }) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-shrink-0 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
                     ? 'border-sky-500 text-sky-500'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {label}
+                <Icon className="w-4 h-4" />{label}
               </button>
             ))}
           </div>
@@ -226,7 +236,7 @@ export default function SharedTripPage({ shareToken }: Props) {
                   return (
                     <div key={item.id} className={`${style.bg} border ${style.border} rounded-xl p-4`}>
                       <div className="flex items-center gap-2 mb-1">
-                        <span>{style.emoji}</span>
+                        <style.icon className={`w-4 h-4 ${style.text}`} />
                         <span className={`text-xs font-medium ${style.text}`}>{style.label}</span>
                         {item.status === 'booked' && (
                           <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">予約済</span>
@@ -339,7 +349,9 @@ export default function SharedTripPage({ shareToken }: Props) {
                   .sort((a, b) => ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority]))
                   .map((item) => (
                     <div key={item.id} className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                      <p className="text-xs text-amber-600 mb-1">{WISHLIST_LABELS[item.category]}</p>
+                      <p className="text-xs text-amber-600 mb-1 flex items-center gap-1">
+                        {(() => { const w = WISHLIST_LABELS[item.category]; const WIcon = w.icon; return <><WIcon className="w-3.5 h-3.5" />{w.label}</>; })()}
+                      </p>
                       <p className="font-bold text-gray-900">{item.name}</p>
                       {item.notes && <p className="text-xs text-gray-500 mt-1">{item.notes}</p>}
                       <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_STYLES[item.priority]}`}>
@@ -378,7 +390,7 @@ export default function SharedTripPage({ shareToken }: Props) {
                       return (
                         <div key={cat} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                           <div className="flex items-center gap-2 px-4 py-2.5 bg-teal-50 border-b border-teal-100">
-                            <span>{catInfo.emoji}</span>
+                            <catInfo.icon className="w-4 h-4 text-teal-600" />
                             <span className="text-sm font-semibold text-teal-700">{catInfo.label}</span>
                             <span className="ml-auto text-xs text-teal-500">
                               {items.filter((i) => i.isChecked).length}/{items.length}
