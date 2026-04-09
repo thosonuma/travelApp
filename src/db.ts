@@ -16,6 +16,8 @@ type DbTrip = {
   created_at: string;
   is_shared: boolean;
   share_token: string;
+  is_edit_enabled: boolean;
+  edit_token: string;
 };
 
 type DbFlight = {
@@ -158,6 +160,8 @@ export async function loadTrips(): Promise<Trip[]> {
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
     isShared: r.is_shared ?? false,
+    isEditEnabled: r.is_edit_enabled ?? false,
+    editToken: r.edit_token ?? '',
     shareToken: r.share_token ?? '',
     flights: [],
     accommodations: [],
@@ -189,6 +193,8 @@ export async function loadTripDetails(tripId: string): Promise<Trip> {
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
     isShared: r.is_shared ?? false,
+    isEditEnabled: r.is_edit_enabled ?? false,
+    editToken: r.edit_token ?? '',
     shareToken: r.share_token ?? '',
     flights: ((flightsRes.data ?? []) as DbFlight[]).map(toFlight),
     accommodations: ((accsRes.data ?? []) as DbAccommodation[]).map(toAccommodation),
@@ -229,6 +235,8 @@ export async function createTrip(
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
     isShared: r.is_shared ?? false,
+    isEditEnabled: r.is_edit_enabled ?? false,
+    editToken: r.edit_token ?? '',
     shareToken: r.share_token ?? '',
     flights: [],
     accommodations: [],
@@ -473,8 +481,53 @@ export async function deletePackingItem(id: string): Promise<void> {
 }
 
 // ============================================================
-// 共有機能
+// 共有・編集共有機能
 // ============================================================
+
+/** 編集共有ON/OFFを切り替える（オーナー用）*/
+export async function setTripEditEnabled(tripId: string, isEnabled: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('trips')
+    .update({ is_edit_enabled: isEnabled })
+    .eq('id', tripId);
+  if (error) throw error;
+}
+
+/** edit_token でトリップを読み込む（未ログインOK） */
+export async function loadTripByEditToken(editToken: string): Promise<Trip> {
+  const tripRes = await supabase.rpc('load_trip_by_edit_token', { p_edit_token: editToken }).single();
+  if (tripRes.error) throw tripRes.error;
+
+  const r = tripRes.data as DbTrip;
+  const tripId = r.id;
+
+  const [flightsRes, accsRes, schedRes, wishRes, packRes] = await Promise.all([
+    supabase.from('flights').select('*').eq('trip_id', tripId),
+    supabase.from('accommodations').select('*').eq('trip_id', tripId),
+    supabase.from('schedule_items').select('*').eq('trip_id', tripId),
+    supabase.from('wishlist_items').select('*').eq('trip_id', tripId),
+    supabase.from('packing_items').select('*').eq('trip_id', tripId),
+  ]);
+
+  return {
+    id: r.id,
+    name: r.name,
+    destination: r.destination,
+    startDate: r.start_date,
+    endDate: r.end_date,
+    coverEmoji: r.cover_emoji,
+    createdAt: r.created_at,
+    isShared: r.is_shared ?? false,
+    shareToken: r.share_token ?? '',
+    isEditEnabled: r.is_edit_enabled ?? false,
+    editToken: r.edit_token ?? '',
+    flights: ((flightsRes.data ?? []) as DbFlight[]).map(toFlight),
+    accommodations: ((accsRes.data ?? []) as DbAccommodation[]).map(toAccommodation),
+    scheduleItems: ((schedRes.data ?? []) as DbScheduleItem[]).map(toScheduleItem),
+    wishlist: ((wishRes.data ?? []) as DbWishlistItem[]).map(toWishlistItem),
+    packingItems: ((packRes.data ?? []) as DbPackingItem[]).map(toPackingItem),
+  };
+}
 
 /** 共有ON/OFFを切り替える */
 export async function setTripShared(tripId: string, isShared: boolean): Promise<void> {
@@ -510,6 +563,8 @@ export async function loadSharedTrip(shareToken: string): Promise<Trip> {
     coverEmoji: r.cover_emoji,
     createdAt: r.created_at,
     isShared: r.is_shared ?? false,
+    isEditEnabled: r.is_edit_enabled ?? false,
+    editToken: r.edit_token ?? '',
     shareToken: r.share_token ?? '',
     flights: ((flightsRes.data ?? []) as DbFlight[]).filter((f) => f.trip_id === tripId).map(toFlight),
     accommodations: ((accsRes.data ?? []) as DbAccommodation[]).filter((a) => a.trip_id === tripId).map(toAccommodation),

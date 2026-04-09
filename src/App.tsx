@@ -7,11 +7,14 @@ import AuthPage from './pages/AuthPage';
 import TripListPage from './pages/TripListPage';
 import TripDetailPage from './pages/TripDetailPage';
 import SharedTripPage from './pages/SharedTripPage';
+import EditTripPage from './pages/EditTripPage';
 import { Loader2 } from 'lucide-react';
 
-// /share/:token の形式か確認
+// /share/:token or /edit/:token の形式か確認
 const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
 const SHARE_TOKEN = shareMatch ? shareMatch[1] : null;
+const editMatch = window.location.pathname.match(/^\/edit\/([^/]+)$/);
+const EDIT_TOKEN = editMatch ? editMatch[1] : null;
 
 type View = { page: 'list' } | { page: 'detail'; tripId: string };
 
@@ -93,9 +96,12 @@ export default function App() {
 
   // --- Render ---
 
-  // 共有ページは認証・設定チェック不要で表示
+  // 共有・編集ページは認証・設定チェック不要で表示
   if (SHARE_TOKEN) {
     return <SharedTripPage shareToken={SHARE_TOKEN} />;
+  }
+  if (EDIT_TOKEN) {
+    return <EditTripPage editToken={EDIT_TOKEN} />;
   }
 
   if (!isConfigured) {

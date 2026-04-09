@@ -16,6 +16,8 @@ const sampleTrip: Trip = {
   coverEmoji: '🏝️',
   isShared: false,
   shareToken: generateId(),
+  isEditEnabled: false,
+  editToken: generateId(),
   flights: [
     {
       id: generateId(),

@@ -72,4 +72,6 @@ export interface Trip {
   createdAt: string;
   isShared: boolean;
   shareToken: string;
+  isEditEnabled: boolean;
+  editToken: string;
 }

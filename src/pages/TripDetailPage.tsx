@@ -51,6 +51,7 @@ interface Props {
   onTripUpdated: (trip: Trip) => void;
   onDelete: () => void;
   onBack: () => void;
+  editToken?: string; // 編集リンク経由のアクセス時に渡す
 }
 
 type SidebarTab = 'flights' | 'accommodations' | 'packing';
@@ -62,16 +63,20 @@ type Modal =
   | { type: 'packing'; item?: PackingItem }
   | null;
 
-export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }: Props) {
+export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, editToken }: Props) {
+  const isEditMode = !!editToken; // 編集リンク経由かどうか
   const dates = getTripDates(trip);
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('flights');
   const [modal, setModal] = useState<Modal>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [sharingToggling, setSharingToggling] = useState(false);
+  const [editToggling, setEditToggling] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedEdit, setCopiedEdit] = useState(false);
 
   const shareUrl = `${window.location.origin}/share/${trip.shareToken}`;
+  const editUrl  = `${window.location.origin}/edit/${trip.editToken}`;
 
   async function handleToggleShare() {
     setSharingToggling(true);
@@ -83,10 +88,26 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
     }
   }
 
+  async function handleToggleEdit() {
+    setEditToggling(true);
+    try {
+      await db.setTripEditEnabled(trip.id, !trip.isEditEnabled);
+      onTripUpdated({ ...trip, isEditEnabled: !trip.isEditEnabled });
+    } finally {
+      setEditToggling(false);
+    }
+  }
+
   async function handleCopyLink() {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleCopyEditLink() {
+    await navigator.clipboard.writeText(editUrl);
+    setCopiedEdit(true);
+    setTimeout(() => setCopiedEdit(false), 2000);
   }
 
   const selectedDate = dates[selectedDateIndex];
@@ -221,23 +242,31 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
               {' · '}{trip.destination}
             </p>
           </div>
-          <button
-            onClick={() => setShowShareModal(true)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              trip.isShared
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Share2 className="w-4 h-4" />
-            {trip.isShared ? '共有中' : '共有'}
-          </button>
-          <button
-            onClick={() => { if (confirm('この旅行を削除しますか？')) onDelete(); }}
-            className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-400"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {isEditMode ? (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-100 text-sky-700">
+              <Edit2 className="w-3.5 h-3.5" />編集モード
+            </span>
+          ) : (
+            <button
+              onClick={() => setShowShareModal(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                trip.isShared
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Share2 className="w-4 h-4" />
+              {trip.isShared ? '共有中' : '共有'}
+            </button>
+          )}
+          {!isEditMode && (
+            <button
+              onClick={() => { if (confirm('この旅行を削除しますか？')) onDelete(); }}
+              className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-400"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -636,10 +665,10 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                 </button>
               </div>
 
-              {/* Link copy */}
+              {/* 閲覧リンク */}
               {trip.isShared ? (
-                <div>
-                  <p className="text-xs font-medium text-gray-600 mb-2">共有URL</p>
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-gray-600 mb-2">閲覧URL（読み取り専用）</p>
                   <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
                     <Link className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     <span className="text-xs text-gray-600 flex-1 truncate">{shareUrl}</span>
@@ -652,15 +681,56 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack }
                       {copied ? <><Check className="w-3 h-3" /> コピー済</> : 'コピー'}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">
-                    ※ 閲覧専用です。編集・削除はできません。
-                  </p>
                 </div>
               ) : (
-                <p className="text-xs text-gray-400 text-center py-2">
-                  共有をONにするとリンクが発行されます
+                <p className="text-xs text-gray-400 text-center pb-3">
+                  閲覧共有をONにするとリンクが発行されます
                 </p>
               )}
+
+              {/* 編集共有セクション */}
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between bg-sky-50 rounded-xl p-4 mb-3">
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">編集リンクを発行</p>
+                    <p className="text-xs text-gray-500 mt-0.5">ONにするとリンクを知る人が編集できます</p>
+                  </div>
+                  <button
+                    onClick={handleToggleEdit}
+                    disabled={editToggling}
+                    className="flex-shrink-0 ml-3"
+                  >
+                    {trip.isEditEnabled
+                      ? <ToggleRight className="w-10 h-10 text-sky-500" />
+                      : <ToggleLeft className="w-10 h-10 text-gray-300" />
+                    }
+                  </button>
+                </div>
+                {trip.isEditEnabled ? (
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-2">編集URL</p>
+                    <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+                      <Edit2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-xs text-gray-600 flex-1 truncate">{editUrl}</span>
+                      <button
+                        onClick={handleCopyEditLink}
+                        className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          copiedEdit ? 'bg-green-100 text-green-700' : 'bg-sky-500 text-white hover:bg-sky-600'
+                        }`}
+                      >
+                        {copiedEdit ? <><Check className="w-3 h-3" /> コピー済</> : 'コピー'}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      ※ このリンクを知る人は誰でも編集できます。
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 text-center py-1">
+                    編集共有をONにすると編集URLが発行されます
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
