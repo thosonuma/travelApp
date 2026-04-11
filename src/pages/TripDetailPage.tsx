@@ -74,6 +74,14 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
   const [editToggling, setEditToggling] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedEdit, setCopiedEdit] = useState(false);
+  const [mobilePanelTab, setMobilePanelTab] = useState<'schedule' | 'flights' | 'accommodations' | 'packing' | 'wishlist'>('schedule');
+
+  function handleMobileTab(tab: 'schedule' | 'flights' | 'accommodations' | 'packing' | 'wishlist') {
+    setMobilePanelTab(tab);
+    if (tab === 'flights' || tab === 'accommodations' || tab === 'packing') {
+      setSidebarTab(tab as SidebarTab);
+    }
+  }
 
   const shareUrl    = `${window.location.origin}/share/${trip.shareToken}`;
   // 編集URLは閲覧URLに ?e=:editToken を付けた形式（閲覧↔編集をシームレスに切り替え可能）
@@ -237,7 +245,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
           <span className="text-2xl">{trip.coverEmoji}</span>
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-gray-900 text-lg leading-tight truncate">{trip.name}</h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 hidden sm:block">
               {new Date(trip.startDate).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
               {' 〜 '}
               {new Date(trip.endDate).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
@@ -245,28 +253,27 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
             </p>
           </div>
           {isEditMode ? (
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-100 text-sky-700">
-                <Edit2 className="w-3.5 h-3.5" />編集モード
+            <div className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-sky-100 text-sky-700">
+                <Edit2 className="w-3.5 h-3.5" /><span className="hidden sm:inline">編集モード</span>
               </span>
               <a
                 href={viewFromEditUrl}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
               >
-                <Share2 className="w-3.5 h-3.5" />閲覧で見る
+                <Share2 className="w-3.5 h-3.5" /><span className="hidden sm:inline">閲覧で見る</span>
               </a>
             </div>
           ) : (
             <button
               onClick={() => setShowShareModal(true)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 trip.isShared
                   ? 'bg-green-100 text-green-700 hover:bg-green-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              <Share2 className="w-4 h-4" />
-              {trip.isShared ? '共有中' : '共有'}
+              <Share2 className="w-4 h-4" /><span className="hidden sm:inline">{trip.isShared ? '共有中' : '共有'}</span>
             </button>
           )}
           {!isEditMode && (
@@ -284,7 +291,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
       <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 65px)' }}>
 
         {/* LEFT: Flights, Accommodations & Packing */}
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+        <aside className={`w-full lg:w-64 bg-white border-r border-gray-200 flex-col flex-shrink-0 ${['flights','accommodations','packing'].includes(mobilePanelTab) ? 'flex' : 'hidden'} lg:flex`}>
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setSidebarTab('flights')}
@@ -312,7 +319,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-2 pb-20 lg:pb-3">
             {sidebarTab === 'flights' && (
               <>
                 {trip.flights.length === 0 && (
@@ -444,7 +451,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
         </aside>
 
         {/* CENTER: Day Timeline */}
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className={`flex-1 flex-col overflow-hidden ${mobilePanelTab === 'schedule' ? 'flex' : 'hidden'} lg:flex`}>
           {/* Day tabs */}
           <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2">
             <button
@@ -480,7 +487,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
           </div>
 
           {/* Schedule area */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin p-4">
+          <div className="flex-1 overflow-y-auto scrollbar-thin p-4 pb-20 lg:pb-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-sky-500" />
@@ -556,7 +563,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
         </main>
 
         {/* RIGHT: Wishlist */}
-        <aside className="w-60 bg-white border-l border-gray-200 flex flex-col flex-shrink-0">
+        <aside className={`w-full lg:w-60 bg-white border-l border-gray-200 flex-col flex-shrink-0 ${mobilePanelTab === 'wishlist' ? 'flex' : 'hidden'} lg:flex`}>
           <div className="p-3 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-amber-500" />
@@ -567,7 +574,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-2 pb-20 lg:pb-3">
             {trip.wishlist.length === 0 && (
               <p className="text-xs text-gray-400 text-center py-4">行きたい場所を追加しましょう</p>
             )}
@@ -598,6 +605,30 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
           </div>
         </aside>
       </div>
+
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-10">
+        <div className="flex">
+          {([
+            { tab: 'schedule'       as const, icon: Calendar,    label: '予定'    },
+            { tab: 'flights'        as const, icon: Plane,        label: 'フライト' },
+            { tab: 'accommodations' as const, icon: Hotel,        label: '宿泊'    },
+            { tab: 'packing'        as const, icon: ShoppingBag,  label: '持ち物'  },
+            { tab: 'wishlist'       as const, icon: Star,         label: '行きたい' },
+          ]).map(({ tab, icon: Icon, label }) => (
+            <button
+              key={tab}
+              onClick={() => handleMobileTab(tab)}
+              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
+                mobilePanelTab === tab ? 'text-sky-500' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* Modals */}
       {modal?.type === 'flight' && (
