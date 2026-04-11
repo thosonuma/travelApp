@@ -12,6 +12,13 @@ body {
   background-color: #f8fafc;
 }
 
+/* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
 }

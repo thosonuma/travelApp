@@ -38,8 +38,9 @@ export default function PackingModal({ initial, onSave, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-sm max-h-[85vh] overflow-y-auto">
+        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mt-3 mb-1 sm:hidden" />
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-900">
             {initial ? '持ち物を編集' : '持ち物を追加'}
