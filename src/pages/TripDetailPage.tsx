@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation, PackingItem } from '../types';
 import {
   ArrowLeft, Plane, Hotel, Calendar, Star, Plus, Trash2,
-  Clock, MapPin, ChevronLeft, ChevronRight, Edit2,
+  Clock, MapPin, ChevronLeft, ChevronRight, Edit2, Eye,
   Share2, Link, Check, X, ToggleLeft, ToggleRight, ShoppingBag
 } from 'lucide-react';
 import { getTripDates, formatDate, formatDateShort } from '../store';
@@ -261,7 +261,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
                 href={viewFromEditUrl}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
               >
-                <Share2 className="w-3.5 h-3.5" /><span className="hidden sm:inline">閲覧で見る</span>
+                <Eye className="w-3.5 h-3.5" /><span className="hidden sm:inline">閲覧で見る</span>
               </a>
             </div>
           ) : (
