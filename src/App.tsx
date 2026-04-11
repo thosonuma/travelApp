@@ -8,6 +8,7 @@ import TripListPage from './pages/TripListPage';
 import TripDetailPage from './pages/TripDetailPage';
 import SharedTripPage from './pages/SharedTripPage';
 import EditTripPage from './pages/EditTripPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { Loader2 } from 'lucide-react';
 
 // /share/:token or /edit/:token の形式か確認
@@ -15,6 +16,10 @@ const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
 const SHARE_TOKEN = shareMatch ? shareMatch[1] : null;
 const editMatch = window.location.pathname.match(/^\/edit\/([^/]+)$/);
 const EDIT_TOKEN = editMatch ? editMatch[1] : null;
+
+// パスワードリセットリンクからのリダイレクト検知 (#type=recovery)
+const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+const IS_PASSWORD_RECOVERY = hashParams.get('type') === 'recovery';
 
 type View = { page: 'list' } | { page: 'detail'; tripId: string };
 
@@ -97,6 +102,9 @@ export default function App() {
   // --- Render ---
 
   // 共有・編集ページは認証・設定チェック不要で表示
+  if (IS_PASSWORD_RECOVERY) {
+    return <ResetPasswordPage />;
+  }
   if (SHARE_TOKEN) {
     return <SharedTripPage shareToken={SHARE_TOKEN} />;
   }
