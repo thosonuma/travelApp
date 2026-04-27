@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '../supabase';
-import { Plane, Mail, Lock, Loader2 } from 'lucide-react';
+import { Plane, Mail, Lock, Loader2, FlaskConical } from 'lucide-react';
 
-export default function AuthPage() {
+interface Props {
+  onDemoLogin: () => void;
+}
+
+export default function AuthPage({ onDemoLogin }: Props) {
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -172,6 +176,27 @@ export default function AuthPage() {
               </button>
             )}
           </form>
+
+          {mode !== 'reset' && (
+            <>
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">または</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+              <button
+                type="button"
+                onClick={onDemoLogin}
+                className="w-full flex items-center justify-center gap-2 border border-amber-300 bg-amber-50 text-amber-700 py-2.5 rounded-xl text-sm font-medium hover:bg-amber-100 transition-colors"
+              >
+                <FlaskConical className="w-4 h-4" />
+                テストログインで試す
+              </button>
+              <p className="text-center text-xs text-gray-400 mt-2">
+                登録不要・サンプルデータで全機能を体験できます
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

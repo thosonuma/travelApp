@@ -3,7 +3,7 @@ import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation, PackingItem } 
 import {
   ArrowLeft, Plane, Hotel, Calendar, Star, Plus, Trash2,
   Clock, MapPin, ChevronLeft, ChevronRight, Edit2, Eye,
-  Share2, Link, Check, X, ToggleLeft, ToggleRight, ShoppingBag
+  Share2, Link, Check, X, ToggleLeft, ToggleRight, ShoppingBag, FlaskConical
 } from 'lucide-react';
 import { getTripDates, formatDate, formatDateShort } from '../store';
 import * as db from '../db';
@@ -51,7 +51,8 @@ interface Props {
   onTripUpdated: (trip: Trip) => void;
   onDelete: () => void;
   onBack: () => void;
-  editToken?: string; // 編集リンク経由のアクセス時に渡す
+  editToken?: string;
+  isDemoMode?: boolean;
 }
 
 type SidebarTab = 'flights' | 'accommodations' | 'packing';
@@ -63,7 +64,7 @@ type Modal =
   | { type: 'packing'; item?: PackingItem }
   | null;
 
-export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, editToken }: Props) {
+export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, editToken, isDemoMode }: Props) {
   const isEditMode = !!editToken; // 編集リンク経由かどうか
   const dates = getTripDates(trip);
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
@@ -287,8 +288,18 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
         </div>
       </header>
 
+      {/* Demo mode banner */}
+      {isDemoMode && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-center gap-2">
+          <FlaskConical className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+          <p className="text-xs text-amber-700">
+            <span className="font-semibold">テストモード</span> — 変更はブラウザを閉じるとリセットされます
+          </p>
+        </div>
+      )}
+
       {/* 3-column layout */}
-      <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 65px)' }}>
+      <div className="flex flex-1 overflow-hidden" style={{ height: isDemoMode ? 'calc(100vh - 97px)' : 'calc(100vh - 65px)' }}>
 
         {/* LEFT: Flights, Accommodations & Packing */}
         <aside className={`w-full lg:w-64 bg-white border-r border-gray-200 flex-col flex-shrink-0 ${['flights','accommodations','packing'].includes(mobilePanelTab) ? 'flex' : 'hidden'} lg:flex`}>

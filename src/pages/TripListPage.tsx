@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trip } from '../types';
-import { Plus, Plane, Trash2, MapPin, Calendar, LogOut, Loader2 } from 'lucide-react';
+import { Plus, Plane, Trash2, MapPin, Calendar, LogOut, Loader2, FlaskConical } from 'lucide-react';
 
 const EMOJI_OPTIONS = ['🏝️', '🗻', '🌸', '🏔️', '🌴', '🎌', '🗼', '🌊', '🏕️', '✈️', '🚢', '🌺'];
 
@@ -8,13 +8,14 @@ interface Props {
   trips: Trip[];
   loading: boolean;
   userEmail: string;
+  isDemoMode?: boolean;
   onCreate: (data: Omit<Trip, 'id' | 'flights' | 'accommodations' | 'scheduleItems' | 'wishlist' | 'packingItems' | 'createdAt'>) => Promise<void>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => Promise<void>;
   onSignOut: () => void;
 }
 
-export default function TripListPage({ trips, loading, userEmail, onCreate, onSelect, onDelete, onSignOut }: Props) {
+export default function TripListPage({ trips, loading, userEmail, isDemoMode, onCreate, onSelect, onDelete, onSignOut }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -95,6 +96,22 @@ export default function TripListPage({ trips, loading, userEmail, onCreate, onSe
           </div>
         </div>
       </div>
+
+      {/* Demo mode banner */}
+      {isDemoMode && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center justify-center gap-2">
+          <FlaskConical className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <p className="text-xs text-amber-700">
+            <span className="font-semibold">テストモード</span> — サンプルデータで動作しています。変更はブラウザを閉じるとリセットされます。
+          </p>
+          <button
+            onClick={onSignOut}
+            className="ml-2 text-xs text-amber-600 underline hover:text-amber-800 flex-shrink-0"
+          >
+            終了してログインへ
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       <main className="relative max-w-5xl mx-auto px-6 py-8 min-h-screen">

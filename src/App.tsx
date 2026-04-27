@@ -9,7 +9,7 @@ import TripDetailPage from './pages/TripDetailPage';
 import SharedTripPage from './pages/SharedTripPage';
 import EditTripPage from './pages/EditTripPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FlaskConical } from 'lucide-react';
 
 // /share/:token or /edit/:token の形式か確認
 const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
@@ -26,6 +26,7 @@ type View = { page: 'list' } | { page: 'detail'; tripId: string };
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [demoMode, setDemoMode] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [tripsLoading, setTripsLoading] = useState(false);
   const [view, setView] = useState<View>({ page: 'list' });
@@ -46,9 +47,9 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load trips when user changes
+  // Load trips when user or demo mode changes
   useEffect(() => {
-    if (!user) {
+    if (!user && !demoMode) {
       setTrips([]);
       setView({ page: 'list' });
       setCurrentTrip(null);
@@ -59,7 +60,7 @@ export default function App() {
       .then(setTrips)
       .catch(console.error)
       .finally(() => setTripsLoading(false));
-  }, [user]);
+  }, [user, demoMode]);
 
   async function handleSelectTrip(id: string) {
     setDetailLoading(true);
@@ -95,7 +96,17 @@ export default function App() {
     setTrips((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }
 
+  function handleDemoLogin() {
+    db.setDemoMode(true);
+    setDemoMode(true);
+  }
+
   async function handleSignOut() {
+    if (demoMode) {
+      db.setDemoMode(false);
+      setDemoMode(false);
+      return;
+    }
     await supabase.auth.signOut();
   }
 
@@ -112,7 +123,7 @@ export default function App() {
     return <EditTripPage editToken={EDIT_TOKEN} />;
   }
 
-  if (!isConfigured) {
+  if (!isConfigured && !demoMode) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sky-50 to-sky-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
@@ -125,15 +136,25 @@ export default function App() {
             <p>VITE_SUPABASE_URL=https://xxxx.supabase.co</p>
             <p>VITE_SUPABASE_ANON_KEY=eyJ...</p>
           </div>
-          <p className="text-gray-400 text-xs">
+          <p className="text-gray-400 text-xs mb-6">
             Supabase ダッシュボード → Project Settings → API からコピーできます
           </p>
+          <div className="border-t border-gray-100 pt-5">
+            <p className="text-xs text-gray-400 mb-3">設定せずに機能を確認したい場合</p>
+            <button
+              onClick={handleDemoLogin}
+              className="w-full flex items-center justify-center gap-2 border border-amber-300 bg-amber-50 text-amber-700 py-2.5 rounded-xl text-sm font-medium hover:bg-amber-100 transition-colors"
+            >
+              <FlaskConical className="w-4 h-4" />
+              テストログインで試す
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (authLoading) {
+  if (authLoading && !demoMode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-sky-100">
         <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
@@ -141,8 +162,8 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return <AuthPage />;
+  if (!user && !demoMode) {
+    return <AuthPage onDemoLogin={handleDemoLogin} />;
   }
 
   if (view.page === 'detail') {
@@ -159,6 +180,7 @@ export default function App() {
         onTripUpdated={handleTripUpdated}
         onDelete={() => handleDeleteTrip(currentTrip.id)}
         onBack={() => { setView({ page: 'list' }); setCurrentTrip(null); }}
+        isDemoMode={demoMode}
       />
     );
   }
@@ -167,7 +189,8 @@ export default function App() {
     <TripListPage
       trips={trips}
       loading={tripsLoading}
-      userEmail={user.email ?? ''}
+      userEmail={demoMode ? 'テストユーザー' : (user?.email ?? '')}
+      isDemoMode={demoMode}
       onCreate={handleCreateTrip}
       onSelect={handleSelectTrip}
       onDelete={handleDeleteTrip}
