@@ -1,4 +1,5 @@
 export type FlightDirection = 'outbound' | 'return';
+export type TransportType = 'flight' | 'shinkansen' | 'train' | 'bus' | 'ferry' | 'rental_car';
 export type ItemCategory = 'tour' | 'food' | 'transport' | 'free';
 export type ItemStatus = 'booked' | 'tentative';
 export type WishlistCategory = 'restaurant' | 'spot' | 'shop' | 'activity';
@@ -7,6 +8,7 @@ export type PackingCategory = 'clothing' | 'toiletry' | 'document' | 'electronic
 
 export interface Flight {
   id: string;
+  transportType: TransportType;
   direction: FlightDirection;
   airline: string;
   flightNo: string;

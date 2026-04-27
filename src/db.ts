@@ -27,8 +27,8 @@ function makeDemoTrips(): Trip[] {
       editToken: 'demo-edit-1',
       createdAt: '2026-04-01T00:00:00.000Z',
       flights: [
-        { id: 'demo-f-1', direction: 'outbound', airline: 'ANA', flightNo: 'NH987', departureAirport: '羽田空港 (HND)', arrivalAirport: '石垣空港 (ISG)', date: '2026-05-02', departureTime: '09:00', arrivalTime: '12:10', bookingRef: 'ABC123', notes: '' },
-        { id: 'demo-f-2', direction: 'return', airline: 'ANA', flightNo: 'NH988', departureAirport: '石垣空港 (ISG)', arrivalAirport: '羽田空港 (HND)', date: '2026-05-05', departureTime: '13:30', arrivalTime: '16:40', bookingRef: 'ABC124', notes: '' },
+        { id: 'demo-f-1', transportType: 'flight' as const, direction: 'outbound', airline: 'ANA', flightNo: 'NH987', departureAirport: '羽田空港 (HND)', arrivalAirport: '石垣空港 (ISG)', date: '2026-05-02', departureTime: '09:00', arrivalTime: '12:10', bookingRef: 'ABC123', notes: '' },
+        { id: 'demo-f-2', transportType: 'flight' as const, direction: 'return', airline: 'ANA', flightNo: 'NH988', departureAirport: '石垣空港 (ISG)', arrivalAirport: '羽田空港 (HND)', date: '2026-05-05', departureTime: '13:30', arrivalTime: '16:40', bookingRef: 'ABC124', notes: '' },
       ],
       accommodations: [
         { id: 'demo-a-1', name: 'ANAインターコンチネンタル石垣リゾート', address: '沖縄県石垣市真栄里354-1', checkIn: '2026-05-02', checkOut: '2026-05-05', notes: '3泊 / 海側のお部屋をリクエスト済み' },
@@ -75,8 +75,9 @@ function makeDemoTrips(): Trip[] {
       editToken: 'demo-edit-2',
       createdAt: '2026-03-01T00:00:00.000Z',
       flights: [
-        { id: 'demo-f-3', direction: 'outbound', airline: 'ANA', flightNo: 'NH23', departureAirport: '羽田空港 (HND)', arrivalAirport: '伊丹空港 (ITM)', date: '2026-04-01', departureTime: '08:00', arrivalTime: '09:05', bookingRef: 'XYZ789', notes: '' },
-        { id: 'demo-f-4', direction: 'return', airline: 'ANA', flightNo: 'NH32', departureAirport: '伊丹空港 (ITM)', arrivalAirport: '羽田空港 (HND)', date: '2026-04-03', departureTime: '19:00', arrivalTime: '20:05', bookingRef: 'XYZ790', notes: '' },
+        { id: 'demo-f-3', transportType: 'flight' as const, direction: 'outbound', airline: 'ANA', flightNo: 'NH23', departureAirport: '羽田空港 (HND)', arrivalAirport: '伊丹空港 (ITM)', date: '2026-04-01', departureTime: '08:00', arrivalTime: '09:05', bookingRef: 'XYZ789', notes: '' },
+        { id: 'demo-f-4', transportType: 'shinkansen' as const, direction: 'outbound', airline: 'JR東海', flightNo: 'のぞみ17号', departureAirport: '新大阪駅', arrivalAirport: '京都駅', date: '2026-04-01', departureTime: '09:30', arrivalTime: '09:44', bookingRef: '', notes: '自由席で乗車' },
+        { id: 'demo-f-5', transportType: 'flight' as const, direction: 'return', airline: 'ANA', flightNo: 'NH32', departureAirport: '伊丹空港 (ITM)', arrivalAirport: '羽田空港 (HND)', date: '2026-04-03', departureTime: '19:00', arrivalTime: '20:05', bookingRef: 'XYZ790', notes: '' },
       ],
       accommodations: [
         { id: 'demo-a-2', name: '京都ホテルオークラ', address: '京都府京都市中京区河原町御池', checkIn: '2026-04-01', checkOut: '2026-04-03', notes: '2泊 / 市内観光に便利な立地' },
@@ -133,6 +134,7 @@ type DbTrip = {
 type DbFlight = {
   id: string;
   trip_id: string;
+  transport_type: string;
   direction: string;
   airline: string;
   flight_no: string;
@@ -190,6 +192,7 @@ type DbPackingItem = {
 function toFlight(r: DbFlight): Flight {
   return {
     id: r.id,
+    transportType: (r.transport_type ?? 'flight') as Flight['transportType'],
     direction: r.direction as Flight['direction'],
     airline: r.airline,
     flightNo: r.flight_no,
@@ -419,6 +422,7 @@ export async function addFlight(tripId: string, data: Omit<Flight, 'id'>): Promi
     .from('flights')
     .insert({
       trip_id: tripId,
+      transport_type: data.transportType ?? 'flight',
       direction: data.direction,
       airline: data.airline,
       flight_no: data.flightNo,
@@ -445,6 +449,7 @@ export async function updateFlight(flight: Flight): Promise<void> {
   const { error } = await supabase
     .from('flights')
     .update({
+      transport_type: flight.transportType ?? 'flight',
       direction: flight.direction,
       airline: flight.airline,
       flight_no: flight.flightNo,

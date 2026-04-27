@@ -21,6 +21,7 @@ const sampleTrip: Trip = {
   flights: [
     {
       id: generateId(),
+      transportType: 'flight' as const,
       direction: 'outbound',
       airline: 'ANA',
       flightNo: 'NH987',
@@ -34,6 +35,7 @@ const sampleTrip: Trip = {
     },
     {
       id: generateId(),
+      transportType: 'flight' as const,
       direction: 'return',
       airline: 'ANA',
       flightNo: 'NH988',

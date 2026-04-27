@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation, PackingItem } from '../types';
+import { Trip, ScheduleItem, WishlistItem, Flight, Accommodation, PackingItem, TransportType } from '../types';
 import {
   ArrowLeft, Plane, Hotel, Calendar, Star, Plus, Trash2,
   Clock, MapPin, ChevronLeft, ChevronRight, Edit2, Eye,
@@ -12,6 +12,13 @@ import AccommodationModal from '../components/AccommodationModal';
 import ScheduleModal from '../components/ScheduleModal';
 import WishlistModal from '../components/WishlistModal';
 import PackingModal from '../components/PackingModal';
+
+const TRANSPORT_EMOJI: Record<TransportType, string> = {
+  flight: '✈️', shinkansen: '🚅', train: '🚃', bus: '🚌', ferry: '⛴️', rental_car: '🚗',
+};
+const TRANSPORT_LABEL: Record<TransportType, string> = {
+  flight: '飛行機', shinkansen: '新幹線', train: '在来線', bus: 'バス', ferry: 'フェリー', rental_car: 'レンタカー',
+};
 
 const CATEGORY_STYLES: Record<ScheduleItem['category'], { bg: string; text: string; border: string; label: string; emoji: string }> = {
   tour:      { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-300', label: 'ツアー/体験', emoji: '🤿' },
@@ -310,7 +317,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
                 sidebarTab === 'flights' ? 'text-sky-500 border-b-2 border-sky-500' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Plane className="w-3.5 h-3.5" />便
+              <Plane className="w-3.5 h-3.5" />交通
             </button>
             <button
               onClick={() => setSidebarTab('accommodations')}
@@ -334,37 +341,46 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
             {sidebarTab === 'flights' && (
               <>
                 {trip.flights.length === 0 && (
-                  <p className="text-xs text-gray-400 text-center py-4">フライト情報を追加しましょう</p>
+                  <p className="text-xs text-gray-400 text-center py-4">交通手段を追加しましょう</p>
                 )}
-                {trip.flights.map((f) => (
-                  <div key={f.id} className="bg-sky-50 border border-sky-100 rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-sky-500">
-                        {f.direction === 'outbound' ? '✈️ 往路' : '🛬 復路'}
-                      </span>
-                      <div className="flex gap-1">
-                        <button onClick={() => setModal({ type: 'flight', item: f })} className="p-1 hover:bg-sky-100 rounded text-sky-400">
-                          <Edit2 className="w-3 h-3" />
-                        </button>
-                        <button onClick={() => handleDeleteFlight(f.id)} className="p-1 hover:bg-red-100 rounded text-gray-300 hover:text-red-400">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                {trip.flights.map((f) => {
+                  const tType = f.transportType ?? 'flight';
+                  const emoji = TRANSPORT_EMOJI[tType];
+                  const label = TRANSPORT_LABEL[tType];
+                  return (
+                    <div key={f.id} className="bg-sky-50 border border-sky-100 rounded-xl p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-sky-500">
+                          {emoji} {label}・{f.direction === 'outbound' ? '往路' : '復路'}
+                        </span>
+                        <div className="flex gap-1">
+                          <button onClick={() => setModal({ type: 'flight', item: f })} className="p-1 hover:bg-sky-100 rounded text-sky-400">
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button onClick={() => handleDeleteFlight(f.id)} className="p-1 hover:bg-red-100 rounded text-gray-300 hover:text-red-400">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
+                      {(f.airline || f.flightNo) && (
+                        <p className="text-xs font-bold text-gray-800">{f.airline} {f.flightNo}</p>
+                      )}
+                      {(f.departureAirport || f.arrivalAirport) && (
+                        <p className="text-xs text-gray-500 mt-0.5">{f.departureAirport} → {f.arrivalAirport}</p>
+                      )}
+                      <p className="text-xs text-gray-600 mt-1 font-medium">
+                        {new Date(f.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                        {f.departureTime && ` ${f.departureTime}`}{f.arrivalTime && ` → ${f.arrivalTime}`}
+                      </p>
+                      {f.bookingRef && <p className="text-xs text-gray-400 mt-0.5">予約番号: {f.bookingRef}</p>}
                     </div>
-                    <p className="text-xs font-bold text-gray-800">{f.airline} {f.flightNo}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{f.departureAirport} → {f.arrivalAirport}</p>
-                    <p className="text-xs text-gray-600 mt-1 font-medium">
-                      {new Date(f.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
-                      {' '}{f.departureTime} → {f.arrivalTime}
-                    </p>
-                    {f.bookingRef && <p className="text-xs text-gray-400 mt-0.5">予約番号: {f.bookingRef}</p>}
-                  </div>
-                ))}
+                  );
+                })}
                 <button
                   onClick={() => setModal({ type: 'flight' })}
                   className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-sky-200 rounded-xl text-xs text-sky-400 hover:border-sky-400 hover:text-sky-500 hover:bg-sky-50 transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5" />フライトを追加
+                  <Plus className="w-3.5 h-3.5" />交通手段を追加
                 </button>
               </>
             )}
@@ -622,7 +638,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
         <div className="flex">
           {([
             { tab: 'schedule'       as const, icon: Calendar,    label: '予定'    },
-            { tab: 'flights'        as const, icon: Plane,        label: 'フライト' },
+            { tab: 'flights'        as const, icon: Plane,        label: '交通'    },
             { tab: 'accommodations' as const, icon: Hotel,        label: '宿泊'    },
             { tab: 'packing'        as const, icon: ShoppingBag,  label: '持ち物'  },
             { tab: 'wishlist'       as const, icon: Star,         label: '行きたい' },
