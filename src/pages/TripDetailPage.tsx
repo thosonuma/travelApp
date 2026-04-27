@@ -372,6 +372,7 @@ export default function TripDetailPage({ trip, onTripUpdated, onDelete, onBack, 
                         {new Date(f.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
                         {f.departureTime && ` ${f.departureTime}`}{f.arrivalTime && ` → ${f.arrivalTime}`}
                       </p>
+                      {f.seatNo && <p className="text-xs text-gray-400 mt-0.5">🪑 {f.seatNo}</p>}
                       {f.bookingRef && <p className="text-xs text-gray-400 mt-0.5">予約番号: {f.bookingRef}</p>}
                     </div>
                   );

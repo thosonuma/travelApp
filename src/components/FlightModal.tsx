@@ -45,6 +45,7 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
     date: initial?.date ?? tripStartDate,
     departureTime: initial?.departureTime ?? '',
     arrivalTime: initial?.arrivalTime ?? '',
+    seatNo: initial?.seatNo ?? '',
     bookingRef: initial?.bookingRef ?? '',
     notes: initial?.notes ?? '',
   });
@@ -195,6 +196,19 @@ export default function FlightModal({ initial, tripStartDate, tripEndDate, onSav
                 />
               </div>
             </div>
+
+            {(form.transportType === 'shinkansen' || form.transportType === 'train') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">席番号（任意）</label>
+                <input
+                  type="text"
+                  value={form.seatNo}
+                  onChange={(e) => setForm({ ...form, seatNo: e.target.value })}
+                  placeholder="5号車 12番A席"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">予約番号（任意）</label>

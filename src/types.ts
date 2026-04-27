@@ -17,6 +17,7 @@ export interface Flight {
   date: string; // YYYY-MM-DD
   departureTime: string; // HH:MM
   arrivalTime: string;
+  seatNo: string;
   bookingRef: string;
   notes: string;
 }
